@@ -57,21 +57,35 @@ entity mdc_fd is
 end entity mdc_fd;
 
 architecture fd of mdc_fd is
-  signal X, Y, M : signed (3 downto 0);
+  signal X : signed (3 downto 0);
+  signal Y : signed (3 downto 0);
+  signal M : signed (3 downto 0);
   signal XdiferenteY, XmenorY : bit;
 begin
-  X <= A when (ldX = '1');
-  Y <= B when (ldY = '1');
-
-  XdiferenteY <= '1' when (X /= Y) else '0';
-  XmenorY <= '1' when (X < Y) else '0';
-
-  XneqY <= '1' when (X /= Y) else '0';
-  XltY <= '1' when (X < Y) else '0';
-
-  my_process : process (ldM) is
+  my_process : process (ldM, ldx, ldy) is
   begin
+	if (ldX = '1') then
+	  X <= A;
+	end if;
+	if (ldy = '1') then
+	  Y <= B;
+	end if;
 
+	if (X /= Y) then
+	  XdiferenteY <= '1';
+	else 
+	  xdiferenteY <= '0';
+	 end if;
+	  
+	if (X < Y) then
+	  XmenorY <= '1';
+	else 
+		XmenorY <= '0';
+	end if;
+
+	 XneqY <= XdiferenteY;
+	 XltY <= XmenorY;
+	  
     if (ldM = '1') then S <= M;
     else
       if (XdiferenteY = '1' and XmenorY = '0') then M <= Y;

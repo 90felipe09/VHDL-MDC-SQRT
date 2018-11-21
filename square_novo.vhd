@@ -1,55 +1,92 @@
 library ieee;
 use ieee.numeric_bit.all;
+--use ieee.numeric_std.all;
 
--- @brief Raiz Quadrada
-entity square is
+-- @brief reg8bit
+---- Estado: Não implementado.
+entity reg8bit is
   port (
-    X     : in  signed(7 downto 0); -- entrada
-    S     : out signed(7 downto 0); -- saida
-    reset : in  bit; -- reset ativo alto assíncrono
-    done  : out bit; -- alto quando terminou de calcular
-    clk   : in  bit
+		D : in signed (7 downto 0);
+		clk : in bit;
+		load : in bit;
+		shiftR : in bit;
+
+		Do : out signed (7 downto 0)
   );
-end entity square;
 
--- Descrição estrutural Alto nível FD e UC
-architecture square_arch of square is
-	component square_fd is
-		port
-		(
-			X : 		in signed(7 downto 0);
-			clk : 	in bit;
-			itera : 	in bit;
-			done : 	in bit;
-			reset : 	in bit;
+end entity reg8bit;
 
-			square : out signed (7 downto 0);
-			QX : 		out signed (7 downto 0);
-			S : 		out signed (7 downto 0)
-		);
-	end component;
-
-	component square_uc is
-		port
-		(
-			square : in signed(7 downto 0);
-			QX : 		in signed(7 downto 0);
-			clk : 	in bit;
-
-			itera : 	out bit;
-			done : 	out bit
-		);
-	end component;
-
-	signal itera, donesig : bit;
-  signal squaresig, qxsig: signed (7 downto 0);
-
+architecture reg8bit_arch of reg8bit is
+	signal Q : signed (7 downto 0);
 	begin
-		fd: square_fd port map(X, clk, itera, donesig, reset, squaresig, qxsig, S);
-		uc: square_uc port map(squaresig, qxsig, clk, itera, done);
+		process(clk,load)
+			begin
+				if (clk'event and clk ='1') then
+					if (load = '1') then
+						Q <= D;
+					elsif (shiftR = '1' and load = '0') then
+						Q <= shift_right(signed(Q), 1);
+					end if;
+        Do <= Q;
+				end if;
+			end process;
 
 end architecture;
 
+
+library ieee;
+use ieee.numeric_bit.all;
+
+entity somador is
+  port (
+    A : in signed (7 downto 0);
+    B : in signed (7 downto 0);
+    sel : in bit;
+
+    R : out signed (7 downto 0)
+  );
+end entity somador;
+
+architecture somador_arch of somador is
+  begin
+    R <= (A + B) when (sel = '0') else (A - B);
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+
+entity mux is
+  port (
+    A : in signed (7 downto 0);
+    B : in signed (7 downto 0);
+    sel : in bit;
+
+    S : out signed (7 downto 0)
+  );
+end entity mux;
+
+architecture mux_arch of mux is
+  begin
+    S <= A when (sel = '0') else B;
+  end architecture;
+
+
+library ieee;
+use ieee.numeric_bit.all;
+
+entity buffertristate is
+  port(
+    A : in signed (7 downto 0);
+    sel : in bit;
+
+    S : out signed (7 downto 0)
+  );
+end entity buffertristate;
+
+architecture buffertristate_arch of buffertristate is
+  begin
+    S <= "00000000" when (sel = '0') else A;
+end architecture;
 
 -- Descrição da raiz quadrada UC
 
@@ -178,91 +215,59 @@ architecture square_df_arch of square_df is
 end architecture;
 
 library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_bit.all;
---use ieee.numeric_std.all;
 
--- @brief reg8bit
----- Estado: Não implementado.
-entity reg8bit is
+-- @brief Raiz Quadrada
+entity square is
   port (
-		D : in signed (7 downto 0);
-		clk : in bit;
-		load : in bit;
-		shiftR : in bit;
-
-		Do : out signed (7 downto 0)
+    X     : in  signed(7 downto 0); -- entrada
+    S     : out signed(7 downto 0); -- saida
+    reset : in  bit; -- reset ativo alto assíncrono
+    done  : out bit; -- alto quando terminou de calcular
+    clk   : in  bit
   );
+end entity square;
 
-end entity reg8bit;
+-- Descrição estrutural Alto nível FD e UC
+architecture square_arch of square is
 
-architecture reg8bit_arch of reg8bit is
-	signal Q : signed (7 downto 0);
+	component square_df is
+		port
+		(
+			X : 		in signed(7 downto 0);
+			clk : 	in bit;
+			itera : 	in bit;
+			done : 	in bit;
+			reset : 	in bit;
+
+			square : out signed (7 downto 0);
+			QX : 		out signed (7 downto 0);
+			S : 		out signed (7 downto 0)
+		);
+	end component;
+
+	component square_uc is
+		port
+		(
+			square : in signed(7 downto 0);
+			QX : 		in signed(7 downto 0);
+			clk : 	in bit;
+
+			itera : 	out bit;
+			done : 	out bit
+		);
+	end component;
+
+	signal itera, donesig : bit;
+  signal squaresig, qxsig: signed (7 downto 0);
+
 	begin
-		process(clk,load)
-			begin
-				if (clk'event and clk ='1') then
-					if (load = '1') then
-						Q <= D;
-					elsif (shiftR = '1' and load = '0') then
-						Q <= shift_right(signed(Q), 1);
-					end if;
-        Do <= Q;
-				end if;
-			end process;
+		fd: square_df port map(X, clk, itera, donesig, reset, squaresig, qxsig, S);
+		uc: square_uc port map(squaresig, qxsig, clk, itera, done);
 
 end architecture;
 
 
-library ieee;
-use ieee.numeric_bit.all;
-
-entity somador is
-  port (
-    A : in signed (7 downto 0);
-    B : in signed (7 downto 0);
-    sel : in bit;
-
-    R : out signed (7 downto 0)
-  );
-end entity somador;
-
-architecture somador_arch of somador is
-  begin
-    R <= (A + B) when (sel = '0') else (A - B);
-end architecture;
-
-library ieee;
-use ieee.numeric_bit.all;
-
-entity mux is
-  port (
-    A : in signed (7 downto 0);
-    B : in signed (7 downto 0);
-    sel : in bit;
-
-    S : out signed (7 downto 0)
-  );
-end entity mux;
-
-architecture mux_arch of mux is
-  begin
-    S <= A when (sel = '0') else B;
-  end architecture;
 
 
-library ieee;
-use ieee.numeric_bit.all;
-
-entity buffertristate is
-  port(
-    A : in signed (7 downto 0);
-    sel : in bit;
-
-    S : out signed (7 downto 0)
-  );
-end entity buffertristate;
-
-architecture buffertristate_arch of buffertristate is
-  begin
-    S <= "00000000" when (sel = '0') else A;
-end architecture;

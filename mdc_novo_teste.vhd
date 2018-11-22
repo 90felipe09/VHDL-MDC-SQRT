@@ -4,13 +4,14 @@
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Multiplexador
 ---- Estado: Implementado.
 entity Multiplexador is
   port (
 		Entrada1 : in signed (3 downto 0);
-    Entrada2 : in signed (3 downto 0);
+		Entrada2 : in signed (3 downto 0);
 		Seletora : in std_logic;
 
 		Saida    : out signed (3 downto 0)
@@ -28,6 +29,7 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Registrador
 ---- Estado: Implementado.
@@ -57,13 +59,14 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Somador
 ---- Estado: Implementado.
 entity Somador is
   port (
 		Entrada1 : in signed (3 downto 0);
-    Entrada2 : in signed (3 downto 0);
+		Entrada2 : in signed (3 downto 0);
 		Seletora : in std_logic;
 
 		Saida    : out signed (3 downto 0)
@@ -81,6 +84,7 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Comparador
 ---- Estado: Implementado.
@@ -111,6 +115,7 @@ end architecture;
 -- @brief MDC
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc is
   port (
@@ -152,6 +157,7 @@ end architecture;
 -- @brief FD
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc_fd is
   port (
@@ -165,7 +171,6 @@ entity mdc_fd is
 end entity mdc_fd;
 
 architecture fd of mdc_fd is
-begin
   component Multiplexador is
     port(
       Entrada1 : in signed (3 downto 0);
@@ -206,7 +211,7 @@ begin
     );
   end component;
 
-  signal saidaSomador, saidaMux1, saidaMux2, saidaMux3, saidaMux4, saidaRegX, saidaRegY, saidaRegM : signed (3 downto 0);
+  signal saidaSomador, saidaMux1, saidaMux2, saidaMux3, saidaMux4, saidaRegX, saidaRegY : signed (3 downto 0);
 begin
   mux1: Multiplexador port map(A, saidaSomador, selIn, saidaMux1);
   mux2: Multiplexador port map(B, saidaSomador, selIn, saidaMux2);
@@ -214,14 +219,15 @@ begin
   mux4: Multiplexador port map(saidaRegY, saidaRegX, selSub, saidaMux4);
   regX: Registrador port map(saidaMux1, ldX, clk, saidaRegX);
   regY: Registrador port map(saidaMux2, ldY, clk, saidaRegY);
-  regM: Registrador port map(saidaRegX, ldM, clk, saidaRegM);
+  regM: Registrador port map(saidaRegX, ldM, clk, S);
   comp: Comparador port map(saidaRegX, saidaRegY, XneqY, XltY);
-  soma: Somador port map(saidaMux3, saidaMux4, '0', saidaSomador);
+  soma: Somador port map(saidaMux3, saidaMux4, '1', saidaSomador);
 end architecture;
 
 -- @brief UC
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc_uc is
   port (
@@ -238,16 +244,17 @@ architecture uc of mdc_uc is
   type estados is (E1, E2, E3, E4, E5, E6);
   signal estado : estados;
 begin
-  my_process : process(clk, reset, XneqY, XltY)
+  my_process : process(clk, reset)
     begin
       if (reset = '1') then
         estado <= E1;
+
       elsif(clk'event and clk = '1') then
         case estado is
           when E1 =>
-            if (XltY = '0' and XneqY = '1') then estado <= E2;
-            elsif (XneqY = '0') then estado <= E6;
-            elsif (XltY = '1') then estado <= E3;
+            if (XltY = '0' and XneqY = '1') then estado <= E2; -- Se X > Y
+            elsif (XneqY = '0') then estado <= E6; -- X == Y
+            elsif (XltY = '1') then estado <= E3; -- X < Y
             end if;
 
           when E2 =>

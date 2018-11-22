@@ -42,11 +42,19 @@ entity somador is
     A : in signed (7 downto 0);
     B : in signed (7 downto 0);
     sel : in bit;
+<<<<<<< HEAD
 
     R : out signed (7 downto 0)
   );
 end entity somador;
 
+=======
+
+    R : out signed (7 downto 0)
+  );
+end entity somador;
+
+>>>>>>> 9b581793ca451e5b35a50d66a7a24d55b6fe1083
 architecture somador_arch of somador is
   begin
     R <= (A + B) when (sel = '0') else (A - B);
@@ -217,6 +225,37 @@ end architecture;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_bit.all;
+<<<<<<< HEAD
+
+-- @brief Raiz Quadrada
+entity square is
+  port (
+    X     : in  signed(7 downto 0); -- entrada
+    S     : out signed(7 downto 0); -- saida
+    reset : in  bit; -- reset ativo alto assíncrono
+    done  : out bit; -- alto quando terminou de calcular
+    clk   : in  bit
+  );
+end entity square;
+
+-- Descrição estrutural Alto nível FD e UC
+architecture square_arch of square is
+
+	component square_df is
+		port
+		(
+			X : 		in signed(7 downto 0);
+			clk : 	in bit;
+			itera : 	in bit;
+			done : 	in bit;
+			reset : 	in bit;
+
+			square : out signed (7 downto 0);
+			QX : 		out signed (7 downto 0);
+			S : 		out signed (7 downto 0)
+		);
+	end component;
+=======
 
 -- @brief Raiz Quadrada
 entity square is
@@ -267,3 +306,30 @@ architecture square_arch of square is
 		uc: square_uc port map(squaresig, qxsig, clk, itera, done);
 
 end architecture;
+
+>>>>>>> 9b581793ca451e5b35a50d66a7a24d55b6fe1083
+
+	component square_uc is
+		port
+		(
+			square : in signed(7 downto 0);
+			QX : 		in signed(7 downto 0);
+			clk : 	in bit;
+
+<<<<<<< HEAD
+			itera : 	out bit;
+			done : 	out bit
+		);
+	end component;
+
+	signal itera, donesig : bit;
+  signal squaresig, qxsig: signed (7 downto 0);
+
+	begin
+		fd: square_df port map(X, clk, itera, donesig, reset, squaresig, qxsig, S);
+		uc: square_uc port map(squaresig, qxsig, clk, itera, done);
+
+end architecture;
+=======
+
+>>>>>>> 9b581793ca451e5b35a50d66a7a24d55b6fe1083

@@ -4,147 +4,278 @@
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief Multiplexador
+---- Estado: Implementado.
+entity Multiplexador is
+  port (
+		Entrada1 : in signed (7 downto 0);
+		Entrada2 : in signed (7 downto 0);
+		Seletora : in std_logic;
+
+		Saida    : out signed (7 downto 0)
+  );
+
+end entity Multiplexador;
+
+architecture Multiplexador_arch of Multiplexador is
+	begin
+		Saida <= Entrada1 when (Seletora = '0') else
+             Entrada2 when (Seletora = '1') else
+             "11111111";
+
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief Registrador
+---- Estado: Implementado.
+entity Registrador is
+  port (
+		Entrada : in signed (7 downto 0);
+    load : in std_logic;
+		clock : in std_logic;
+
+		Saida    : out signed (7 downto 0)
+  );
+
+end entity Registrador;
+
+architecture Registrador_arch of Registrador is
+	begin
+		process(clock, load)
+    begin
+      if (clock'event and clock = '1') then
+        if (load = '1') then
+          Saida <= Entrada;
+        end if;
+      end if;
+    end process;
+
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief Comparador
+---- Estado: Implementado.
+entity Comparador is
+  port (
+		EntradaA : in signed (7 downto 0);
+    EntradaB : in signed (7 downto 0);
+
+    AmaiorB  : out std_logic
+  );
+
+end entity Comparador;
+
+architecture Comparador_arch of Comparador is
+	begin
+
+    AmaiorB <= '1' when (EntradaA > EntradaB) else
+               '0' when (EntradaA <= EntradaB) else
+               '0';
+
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief Somador
+---- Estado: Implementado.
+entity Somador is
+  port (
+		Entrada1 : in signed (7 downto 0);
+    Entrada2 : in signed (7 downto 0);
+		Seletora : in std_logic;
+
+		Saida    : out signed (7 downto 0)
+  );
+
+end entity Somador;
+
+architecture Somador_arch of Somador is
+	begin
+		Saida <= (Entrada1 + Entrada2) when (Seletora = '0') else
+             (Entrada1 - Entrada2) when (Seletora = '1') else
+             "11111111";
+
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief ShiftRight
+---- Estado: Implementado.
+entity ShiftRight is
+  port (
+		Entrada : in signed (7 downto 0);
+
+		Saida    : out signed (7 downto 0)
+  );
+
+end entity ShiftRight;
+
+architecture ShiftRight_arch of ShiftRight is
+	begin
+		Saida <= shift_right(signed(Entrada), 1);
+
+end architecture;
+
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Raiz Quadrada
 entity square is
   port (
     X     : in  signed(7 downto 0); -- entrada
     S     : out signed(7 downto 0); -- saida
-    reset : in  bit; -- reset ativo alto assíncrono
-    done  : out bit; -- alto quando terminou de calcular
-    clk   : in  bit
+    reset : in  std_logic; -- reset ativo alto assíncrono
+    done  : out std_logic; -- alto quando terminou de calcular
+    clk   : in  std_logic
   );
 end entity square;
 
-architecture comp of square is
+architecture square_arch of square is
   component square_fd is
     port (
-      resposta : out signed (7 downto 0);
-		estado   : in  bit_vector (1 downto 0);
-		squareAux 	: out signed (7 downto 0);
-		realizaOp : in bit;
-		opRealizada : out bit;
+      A : in signed (7 downto 0);
+      clock : in std_logic;
+      itera : in std_logic;
+      done : in std_logic;
+      reset : in std_logic;
+
+      SgtA : out std_logic;
+      Saida : out signed (7 downto 0)
     );
   end component;
   component square_uc is
     port (
+      SgtA : in std_logic;
+      clock : in std_logic;
 
+      itera : out std_logic;
+      done : out std_logic
     );
   end component;
-  signal QA, itera, square : bit;
-begin
 
+  signal iteraUC, doneUC,SgtAFD : std_logic;
+
+  begin
+  fd: square_fd port map(X, clk, iteraUC, doneUC, reset, SgtAFD, S);
+  uc: square_uc port map(SgtAFD, clk, iteraUC, doneUC);
+  
+  done <= doneUC;
 end architecture;
 
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
+-- @brief Raiz Quadrada
 entity square_fd is
   port (
-	resposta : out signed (7 downto 0);
-	estado   : in  bit_vector (1 downto 0);
-	squareAux 	: out signed (7 downto 0);
-	realizaOp : in bit;
-	opRealizada : out bit;
+    A : in signed (7 downto 0);
+    clock : in std_logic;
+    itera : in std_logic;
+    done : in std_logic;
+    reset : in std_logic;
+
+    SgtA : out std_logic;
+    Saida : out signed (7 downto 0)
   );
 end entity square_fd;
 
-architecture fd of square_fd is
-	signal delta : signed (7 downto 0);
-	opRealizadaAux : bit;
+architecture square_fd_arch of square_fd is
+  component Registrador is
+    port (
+      Entrada : in signed (7 downto 0);
+      load : in std_logic;
+      clock : in std_logic;
 
-begin
-	proc_square : process (realizaOp, estado) is
-		begin:
-			if (realizaOp'event and realizaOp = '1') then
-				opRealizadaAux <= '0';
-				opRealizada <= '0';
-			end if;
-			
-			if (opRealizadaAux = '0') then
-				case estado is
-					when "00" =>
-						squareAux <= "00000001";
-						delta <= "00000011";
-						resposta <= "00000000";
-						
-					when "01" =>
-						squareAux <= squareAux + delta;
-						delta <= (delta + "00000010");
-						resposta <= "00000000";
-						
-					when "10" =>
-						squareAux <= squareAux;
-						delta <= delta;
-						resposta <= ((delta/2) - 1);
-						
-					when others =>
-						squareAux <= squareAux;
-						delta <= delta;
-						resposta <= resposta;
-						
-				end case;
-				
-				opRealizadaAux <= '1';
-				opRealizada <= '1';
-			end if;
-		end process proc_square;
-	
+      Saida    : out signed (7 downto 0)
+    );
+  end component;
+  component Multiplexador is
+    port (
+      Entrada1 : in signed (7 downto 0);
+      Entrada2 : in signed (7 downto 0);
+      Seletora : in std_logic;
 
+      Saida    : out signed (7 downto 0)
+    );
+  end component;
+  component Somador is
+    port (
+      Entrada1 : in signed (7 downto 0);
+      Entrada2 : in signed (7 downto 0);
+      Seletora : in std_logic;
+
+      Saida    : out signed (7 downto 0)
+    );
+  end component;
+  component Comparador is
+    port (
+      EntradaA : in signed (7 downto 0);
+      EntradaB : in signed (7 downto 0);
+
+      AmaiorB  : out std_logic
+    );
+  end component;
+  component ShiftRight is
+    port (
+      Entrada : in signed (7 downto 0);
+
+      Saida    : out signed (7 downto 0)
+    );
+  end component;
+  signal saidaMux1, saidaMux2, saidaMux3, saidaSomador1, saidaSomador2: signed (7 downto 0);
+  signal saidaRegA, saidaRegS, saidaRegD, saidaShift, saidaMux4, sinalSaida: signed (7 downto 0);
+  begin
+  regA: Registrador port map(A,reset,clock,saidaRegA);
+  regS: Registrador port map(saidaMux1, (itera or reset),clock,saidaRegS);
+  regD: Registrador port map(saidaMux2, (itera or reset),clock,saidaRegD);
+  regM: Registrador port map(saidaSomador2,done,clock,sinalSaida);
+  mux1: Multiplexador port map(saidaSomador1,"00000001",reset,saidaMux1);
+  mux2: Multiplexador port map(saidaSomador2,"00000011",reset,saidaMux2);
+  mux3: Multiplexador port map("00000010","00000001",done,saidaMux3);
+  mux4: Multiplexador port map(saidaRegD,saidaShift,done,saidaMux4);
+  shft: ShiftRight port map(saidaRegD, saidaShift);
+  sum1: Somador port map(saidaRegS,saidaRegD,'0',saidaSomador1);
+  sum2: Somador port map(saidaMux4,saidaMux3,done,saidaSomador2);
+  sum3: Somador port map(sinalSaida, "00000001", '1', Saida);
+  comp: Comparador port map(saidaRegS,saidaRegA,SgtA);
 end architecture;
 
+library ieee;
+use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
+
+-- @brief Raiz Quadrada
 entity square_uc is
   port (
-		state : out bit_vector (1 downto 0);
-      A : in  signed (7 downto 0);
-		square : in  signed (7 downto 0);
-		opRealizada : in bit;
-		realizaOp : out bit;
-      clk   : in  bit
-		rst : in bit;
-		done : out bit;
+    SgtA : in std_logic;
+    clock : in std_logic;
+
+    itera : out std_logic;
+    done : out std_logic
   );
 end entity square_uc;
 
-architecture uc of square_uc is
-	type estados is (E1, E2, E3);
-	signal estado : estados
-		
-begin
-	my_process : process (clk, rst)
-		begin
-			if (reset = '1') then
-				estado <= E1;
-			elsif (clk'event and clk = '1' and opRealizada = '1') then
-				case estado is
-					when E1 =>
-						if (square = "00000001") then estado <= E2;
-						else estado <= E1;
-						end if;
-						
-					when E2 =>
-						if (square <= A) then estado <= E2;
-						else estado <= E3;
-						end if;
-				end case;
+architecture square_uc_arch of square_uc is
+  begin
+    my_process : process(clock)
+    begin
+			if(clock'event and clock='1')then
+			  done <= SgtA;
+			  itera <= not(SgtA);
 			end if;
-		end process my_process;	
-		
-	with estado select 
-		state <= "00" when E1,
-					"01" when E2,
-					"10" when E3,
-					"11" when others;
-					
-	with estado select 
-		realizaOp <=	"00" when E1,
-							"01" when E2,
-							"10" when E3,
-							"11" when others;
-					
-	with estado select 
-		done <=  "00" when E1,
-					"01" when E2,
-					"10" when E3,
-					"11" when others;
-		
-	
+	  end process;
 end architecture;

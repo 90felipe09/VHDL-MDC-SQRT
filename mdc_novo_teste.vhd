@@ -4,6 +4,7 @@
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Multiplexador
 ---- Estado: Implementado.
@@ -28,6 +29,7 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Registrador
 ---- Estado: Implementado.
@@ -57,6 +59,7 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Somador
 ---- Estado: Implementado.
@@ -81,6 +84,7 @@ end architecture;
 
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 -- @brief Comparador
 ---- Estado: Implementado.
@@ -111,6 +115,7 @@ end architecture;
 -- @brief MDC
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc is
   port (
@@ -152,6 +157,7 @@ end architecture;
 -- @brief FD
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc_fd is
   port (
@@ -165,7 +171,6 @@ entity mdc_fd is
 end entity mdc_fd;
 
 architecture fd of mdc_fd is
-begin
   component Multiplexador is
     port(
       Entrada1 : in signed (3 downto 0);
@@ -222,6 +227,7 @@ end architecture;
 -- @brief UC
 library ieee;
 use ieee.numeric_bit.all;
+use ieee.std_logic_1164.all;
 
 entity mdc_uc is
   port (

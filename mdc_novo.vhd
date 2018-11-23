@@ -165,7 +165,6 @@ entity mdc_fd is
 end entity mdc_fd;
 
 architecture fd of mdc_fd is
-begin
   component Multiplexador is
     port(
       Entrada1 : in signed (3 downto 0);
@@ -206,7 +205,7 @@ begin
     );
   end component;
 
-  signal saidaSomador, saidaMux1, saidaMux2, saidaMux3, saidaMux4, saidaRegX, saidaRegY, saidaRegM : signed (3 downto 0);
+  signal saidaSomador, saidaMux1, saidaMux2, saidaMux3, saidaMux4, saidaRegX, saidaRegY : signed (3 downto 0);
 begin
   mux1: Multiplexador port map(A, saidaSomador, selIn, saidaMux1);
   mux2: Multiplexador port map(B, saidaSomador, selIn, saidaMux2);
@@ -214,7 +213,7 @@ begin
   mux4: Multiplexador port map(saidaRegY, saidaRegX, selSub, saidaMux4);
   regX: Registrador port map(saidaMux1, ldX, clk, saidaRegX);
   regY: Registrador port map(saidaMux2, ldY, clk, saidaRegY);
-  regM: Registrador port map(saidaRegX, ldM, clk, saidaRegM);
+  regM: Registrador port map(saidaRegX, ldM, clk, S);
   comp: Comparador port map(saidaRegX, saidaRegY, XneqY, XltY);
   soma: Somador port map(saidaMux3, saidaMux4, '0', saidaSomador);
 end architecture;
